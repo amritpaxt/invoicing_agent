@@ -1,22 +1,23 @@
 #!/usr/bin/env python
-import uvicorn
+from __future__ import annotations
+
 import sys
 
+import uvicorn
+
 if __name__ == "__main__":
-    print("🚀 Starting TIA Backend Server...")
-    print("📝 Frontend: TIA.html")
-    print("📡 API: http://localhost:5000")
-    print("📚 Docs: http://localhost:5000/docs")
-    print("\nPress CTRL+C to stop the server\n")
-    
+    print("Starting TIA project server...")
+    print("Frontend: tia-frontend/dist or Vite dev server")
+    print("Backend: http://127.0.0.1:5000")
+    print("API: http://127.0.0.1:5000/api")
     try:
         uvicorn.run(
             "backend:app",
-            host="127.0.0.1",
+            host="0.0.0.0",
             port=5000,
             reload=True,
-            log_level="info"
+            log_level="info",
         )
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+    except Exception as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
