@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIA — Touchless Invoice Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F8FA;
+    --surface:#FFFFFF;
+    --surface-2:#FBFBFC;
+    --line:#DEE2E8;
+    --line-strong:#C7CCD4;
+    --ink:#0B1220;
+    --text-hi:#0B1220;
+    --text-mid:#535B68;
+    --text-dim:#8B93A1;
+    --blue:#2D5BFF;
+    --blue-dim:#E8ECFF;
+    --amber:#92660B;
+    --amber-bg:#FBF1DC;
+    --green:#0F6A3D;
+    --green-bg:#E3F4EA;
+    --red:#B91C1C;
+    --red-bg:#FCE8E8;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --radius: 4px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text-hi);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  a{color:inherit;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:13px 28px;
+    border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brand-mark{
+    width:28px;height:28px;
+    border-radius:4px;
+    background:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:0.3px;
+    color:#fff;
+  }
+  .brand-name{
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:-0.1px;
+    color:var(--text-hi);
+  }
+  .brand-sub{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--text-dim);
+    letter-spacing:0.6px;
+    margin-left:4px;
+    padding:2px 6px;
+    border:1px solid var(--line);
+    border-radius:3px;
+  }
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:18px;
+  }
+  .role-switch{
+    display:flex;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:2px;
+    gap:2px;
+  }
+  .role-btn{
+    font-family:var(--sans);
+    font-size:12px;
+    font-weight:600;
+    padding:6px 13px;
+    border-radius:4px;
+    border:none;
+    background:transparent;
+    color:var(--text-mid);
+    cursor:pointer;
+    transition:all .12s ease;
+  }
+  .role-btn.active{
+    background:var(--ink);
+    color:#fff;
+  }
+  .clock{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dim);
+  }
+
+  /* ---------- Layout ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns:230px 1fr;
+    min-height:calc(100vh - 57px);
+  }
+  .sidenav{
+    border-right:1px solid var(--line);
+    padding:20px 14px;
+    background:var(--surface);
+  }
+  .nav-section{
+    margin-bottom:22px;
+  }
+  .nav-label{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    padding:0 10px 8px;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 10px;
+    border-radius:4px;
+    font-size:13px;
+    font-weight:500;
+    color:var(--text-mid);
+    cursor:pointer;
+    margin-bottom:1px;
+    transition:background .12s ease;
+  }
+  .nav-item:hover{background:var(--surface-2);}
+  .nav-item.active{
+    background:var(--blue-dim);
+    color:var(--blue);
+    font-weight:600;
+  }
+  .nav-pill{
+    font-family:var(--mono);
+    font-size:10px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    color:var(--text-mid);
+    padding:1px 6px;
+    border-radius:3px;
+  }
+  .nav-pill.warn{background:var(--amber-bg);color:var(--amber);border-color:transparent;}
+
+  .main{
+    padding:26px 32px 60px;
+    max-width:1280px;
+  }
+
+  .page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:22px;
+  }
+  .page-title{
+    font-size:20px;
+    font-weight:700;
+    margin:0 0 4px;
+    letter-spacing:-0.2px;
+    color:var(--text-hi);
+  }
+  .page-desc{
+    font-size:13px;
+    color:var(--text-mid);
+    margin:0;
+  }
+  .btn{
+    font-family:var(--sans);
+    font-size:13px;
+    font-weight:600;
+    padding:8px 15px;
+    border-radius:4px;
+    border:1px solid var(--line-strong);
+    background:var(--surface);
+    color:var(--text-hi);
+    cursor:pointer;
+    transition:all .12s ease;
+  }
+  .btn:hover{border-color:var(--ink);background:var(--surface-2);}
+  .btn-primary{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:#fff;
+  }
+  .btn-primary:hover{background:#1a2436;border-color:#1a2436;}
+
+  /* ---------- KPI row ---------- */
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    margin-bottom:26px;
+    border:1px solid var(--line);
+    background:var(--line);
+  }
+  .kpi{
+    background:var(--surface);
+    padding:15px 18px;
+  }
+  .kpi-label{
+    font-size:10.5px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .kpi-value{
+    font-family:var(--mono);
+    font-size:24px;
+    font-weight:600;
+    color:var(--text-hi);
+    letter-spacing:-0.5px;
+  }
+  .kpi-value.accent{color:var(--amber);}
+  .kpi-value.good{color:var(--green);}
+  .kpi-foot{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:6px;
+  }
+
+  /* ---------- Case list ---------- */
+  .case-list{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    background:var(--surface);
+  }
+  .case-list-head{
+    display:grid;
+    grid-template-columns:90px 1.4fr 1fr 100px 110px 140px 36px;
+    gap:10px;
+    padding:10px 18px;
+    font-size:10.5px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    color:var(--text-dim);
+    background:var(--surface-2);
+    border-bottom:1px solid var(--line);
+  }
+  .case-row{
+    border-bottom:1px solid var(--line);
+  }
+  .case-row:last-child{border-bottom:none;}
+  .case-row-main{
+    display:grid;
+    grid-template-columns:90px 1.4fr 1fr 100px 110px 140px 36px;
+    gap:10px;
+    align-items:center;
+    padding:13px 18px;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .case-row-main:hover{background:var(--surface-2);}
+  .case-id{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-mid);
+  }
+  .case-name{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--text-hi);
+  }
+  .case-sub{
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-top:2px;
+  }
+  .case-client{
+    font-size:13px;
+    color:var(--text-mid);
+  }
+  .case-amount{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--text-hi);
+    text-align:right;
+  }
+  .tag{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-family:var(--mono);
+    font-size:10.5px;
+    font-weight:600;
+    padding:3px 8px;
+    border-radius:3px;
+    white-space:nowrap;
+    border:1px solid transparent;
+  }
+  .tag-dot{width:5px;height:5px;border-radius:50%;}
+  .tag.clear{background:var(--green-bg);color:var(--green);}
+  .tag.clear .tag-dot{background:var(--green);}
+  .tag.review{background:var(--amber-bg);color:var(--amber);}
+  .tag.review .tag-dot{background:var(--amber);}
+  .tag.match{background:var(--red-bg);color:var(--red);}
+  .tag.match .tag-dot{background:var(--red);}
+  .tag.sent{background:var(--blue-dim);color:var(--blue);}
+  .tag.sent .tag-dot{background:var(--blue);}
+
+  .chevron{
+    color:var(--text-dim);
+    font-size:11px;
+    transition:transform .15s ease;
+  }
+  .case-row.open .chevron{transform:rotate(90deg);}
+
+  .case-detail{
+    display:none;
+    padding:6px 18px 20px;
+    background:var(--surface-2);
+    border-top:1px solid var(--line);
+  }
+  .case-row.open .case-detail{display:block;}
+
+  .detail-grid{
+    display:grid;
+    grid-template-columns:1.4fr 1fr;
+    gap:18px;
+    margin-top:14px;
+  }
+
+  .field-table{
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+    background:var(--surface);
+  }
+  .field-row{
+    display:grid;
+    grid-template-columns:140px 1fr 100px;
+    gap:8px;
+    align-items:center;
+    padding:9px 14px;
+    border-bottom:1px solid var(--line);
+    font-size:12.5px;
+  }
+  .field-row:last-child{border-bottom:none;}
+  .field-row.flagged{background:var(--amber-bg);}
+  .field-key{
+    font-family:var(--mono);
+    color:var(--text-dim);
+    font-size:11px;
+  }
+  .field-val{
+    color:var(--text-hi);
+    font-weight:500;
+  }
+  .field-val.editable{
+    border-bottom:1px dashed var(--amber);
+    padding-bottom:1px;
+  }
+  .conf-bar-wrap{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    justify-content:flex-end;
+  }
+  .conf-pct{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--text-dim);
+    width:32px;
+    text-align:right;
+  }
+  .conf-track{
+    width:48px;
+    height:4px;
+    border-radius:2px;
+    background:var(--line);
+    overflow:hidden;
+  }
+  .conf-fill{height:100%;border-radius:2px;}
+
+  .side-panel{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .panel-box{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:13px 15px;
+  }
+  .panel-title{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--text-dim);
+    font-weight:600;
+    margin:0 0 8px;
+  }
+  .panel-text{
+    font-size:12.5px;
+    color:var(--text-mid);
+    line-height:1.5;
+    margin:0;
+  }
+  .candidate{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:7px 0;
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+  }
+  .candidate:last-child{border-bottom:none;}
+  .candidate-name{color:var(--text-hi);font-weight:500;}
+  .candidate-meta{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--text-dim);
+  }
+  .candidate-pick{
+    font-size:11px;
+    font-weight:600;
+    color:var(--blue);
+    cursor:pointer;
+    border:1px solid var(--blue);
+    border-radius:3px;
+    padding:3px 8px;
+    background:transparent;
+  }
+  .candidate-pick:hover{background:var(--blue-dim);}
+  .panel-actions{
+    display:flex;
+    gap:8px;
+    margin-top:4px;
+  }
+  .panel-actions .btn{flex:1;padding:8px;font-size:12px;text-align:center;}
+
+  .source-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    color:var(--text-mid);
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:4px 10px;
+    margin-bottom:12px;
+  }
+
+  .timeline{
+    margin-top:0;
+  }
+  .timeline-item{
+    display:flex;
+    gap:10px;
+    padding:6px 0;
+    font-size:11.5px;
+  }
+  .timeline-dot{
+    width:5px;height:5px;border-radius:50%;
+    background:var(--text-dim);
+    margin-top:4px;
+    flex-shrink:0;
+  }
+  .timeline-dot.live{background:var(--amber);}
+  .timeline-time{font-family:var(--mono);color:var(--text-dim);min-width:42px;}
+  .timeline-label{color:var(--text-mid);}
+
+  /* role-restricted visibility */
+  .finance-only{display:block;}
+  body.role-client .finance-only{display:none;}
+  body.role-client .nav-restricted{display:none;}
+  .client-banner{
+    display:none;
+    background:var(--blue-dim);
+    border:1px solid var(--blue);
+    color:#1A3FBF;
+    border-radius:4px;
+    padding:10px 14px;
+    font-size:12.5px;
+    margin-bottom:18px;
+  }
+  body.role-client .client-banner{display:block;}
+
+  .footer-note{
+    margin-top:30px;
+    font-size:11px;
+    color:var(--text-dim);
+    font-family:var(--mono);
+  }
+</style>
+</head>
+<body class="role-finance">
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">TIA</div>
+    <div class="brand-name">Touchless Invoice Agent</div>
+    <div class="brand-sub">TASC OPS</div>
+  </div>
+  <div class="topbar-right">
+    <div class="clock" id="clock">Mon, 29 Jun 2026 — 10:42 GST</div>
+    <div class="role-switch">
+      <button class="role-btn active" data-role="finance" onclick="setRole('finance', this)">FinOps / Finance</button>
+      <button class="role-btn" data-role="client" onclick="setRole('client', this)">Client View</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="sidenav">
+    <div class="nav-section">
+      <div class="nav-label">Workflow</div>
+      <div class="nav-item active" data-view="inbox" onclick="setView('inbox', this)">📥 Inbox <span class="nav-pill warn" id="navInboxCount">3</span></div>
+      <div class="nav-item" data-view="invoices" onclick="setView('invoices', this)">🧾 Invoices <span class="nav-pill">42</span></div>
+      <div class="nav-item" data-view="dispatch" onclick="setView('dispatch', this)">🚚 Dispatch <span class="nav-pill">12</span></div>
+    </div>
+    <div class="nav-section nav-restricted">
+      <div class="nav-label">Configuration</div>
+      <div class="nav-item" data-view="clients" onclick="setView('clients', this)">🏢 Clients <span class="nav-pill">10</span></div>
+      <div class="nav-item" data-view="validation-rules" onclick="setView('validation-rules', this)">⚙️ Validation rules</div>
+      <div class="nav-item" data-view="dispatch-rules" onclick="setView('dispatch-rules', this)">📤 Dispatch rules</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Insight</div>
+      <div class="nav-item" data-view="analytics" onclick="setView('analytics', this)">📊 Analytics</div>
+      <div class="nav-item" data-view="chat" onclick="setView('chat', this)">💬 Ask TIA</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="client-banner">
+      You're viewing as <strong id="clientBannerName">Emirates Steel Industries LLC</strong>. You can see your own timesheets and invoices only.
+    </div>
+
+    <div id="view-inbox" class="view">
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">June 2026 — Processing Queue</h1>
+        <p class="page-desc">Timesheets received across all channels, from upload to dispatched invoice.</p>
+      </div>
+      <button class="btn btn-primary finance-only">+ Upload timesheet</button>
+    </div>
+
+    <div class="kpi-row finance-only">
+      <div class="kpi">
+        <div class="kpi-label">Touchless rate</div>
+        <div class="kpi-value good">81%</div>
+        <div class="kpi-foot">34 of 42 — zero human touch</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Avg. turnaround</div>
+        <div class="kpi-value">6 min</div>
+        <div class="kpi-foot">received → invoice sent</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Needs review</div>
+        <div class="kpi-value accent">3</div>
+        <div class="kpi-foot">1 match, 2 low-confidence field</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Extraction accuracy</div>
+        <div class="kpi-value good">99.2%</div>
+        <div class="kpi-foot">across all fields, June run</div>
+      </div>
+    </div>
+
+    <div class="case-list" id="caseList">
+      <div class="case-list-head">
+        <div>Case</div>
+        <div>Employee / Source</div>
+        <div>Client</div>
+        <div style="text-align:right">Net pay</div>
+        <div>Status</div>
+        <div>Channel</div>
+        <div></div>
+      </div>
+      <!-- rows injected by JS -->
+    </div>
+    </div><!-- /view-inbox -->
+
+    <div id="view-invoices" class="view" style="display:none">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Invoices</h1>
+          <p class="page-desc">Generated invoices, formatted per each client's requirement.</p>
+        </div>
+      </div>
+      <div class="case-list" id="invoiceList">
+        <div class="case-list-head" style="grid-template-columns:110px 1.3fr 1fr 110px 130px 100px;">
+          <div>Invoice #</div>
+          <div>Client</div>
+          <div>Format</div>
+          <div style="text-align:right">Amount</div>
+          <div>Status</div>
+          <div>Sent</div>
+        </div>
+        <!-- rows injected by JS -->
+      </div>
+    </div>
+
+    <div id="view-dispatch" class="view" style="display:none">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Dispatch queue</h1>
+          <p class="page-desc">Invoices waiting to send, ordered by each client's dispatch rule.</p>
+        </div>
+      </div>
+      <div class="case-list" id="dispatchList">
+        <div class="case-list-head" style="grid-template-columns:34px 1.3fr 1fr 120px 140px;">
+          <div>#</div>
+          <div>Client</div>
+          <div>Rule applied</div>
+          <div style="text-align:right">Amount</div>
+          <div>Status</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-clients" class="view finance-only" style="display:none">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Client master data</h1>
+          <p class="page-desc">Per-client configuration that drives extraction, validation, and invoice format.</p>
+        </div>
+        <button class="btn btn-primary">+ Onboard client</button>
+      </div>
+      <div class="case-list" id="clientList">
+        <div class="case-list-head" style="grid-template-columns:70px 1.4fr 90px 1fr 1fr;">
+          <div>Code</div>
+          <div>Client</div>
+          <div>Currency</div>
+          <div>Validation profile</div>
+          <div>Invoice fields</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-validation-rules" class="view finance-only" style="display:none">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Validation rules</h1>
+          <p class="page-desc">Configurable checks every generated invoice must pass before it can dispatch automatically.</p>
+        </div>
+        <button class="btn btn-primary">+ Add rule</button>
+      </div>
+      <div class="case-list" id="rulesList">
+        <div class="case-list-head" style="grid-template-columns:1.6fr 1fr 110px 100px;">
+          <div>Rule</div>
+          <div>Applies to</div>
+          <div>On fail</div>
+          <div>Status</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-dispatch-rules" class="view finance-only" style="display:none">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Dispatch rules</h1>
+          <p class="page-desc">Per-client rules for how invoices are ordered and sent.</p>
+        </div>
+      </div>
+      <div class="case-list" id="dispatchRulesList">
+        <div class="case-list-head" style="grid-template-columns:70px 1.4fr 1.2fr 1fr;">
+          <div>Code</div>
+          <div>Client</div>
+          <div>Order by</div>
+          <div>Channel</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-analytics" class="view">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Analytics</h1>
+          <p class="page-desc">How the touchless flow is performing this period.</p>
+        </div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Touchless rate</div>
+          <div class="kpi-value good">81%</div>
+          <div class="kpi-foot">target 80%+</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Avg. turnaround</div>
+          <div class="kpi-value">6 min</div>
+          <div class="kpi-foot">target: minutes, not days</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Field accuracy</div>
+          <div class="kpi-value good">99.2%</div>
+          <div class="kpi-foot">target 99%+</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Exceptions / month</div>
+          <div class="kpi-value accent">8</div>
+          <div class="kpi-foot">19% of volume</div>
+        </div>
+      </div>
+      <div class="panel-box" style="margin-top:4px;">
+        <div class="panel-title">Exceptions by type, June 2026</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+              <span>Identity match needed</span><span class="panel-text" style="color:var(--text-hi)">3</span>
+            </div>
+            <div class="conf-track" style="width:100%;height:8px;"><div class="conf-fill" style="width:38%;background:var(--red)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+              <span>Low-confidence field (handwriting)</span><span class="panel-text" style="color:var(--text-hi)">4</span>
+            </div>
+            <div class="conf-track" style="width:100%;height:8px;"><div class="conf-fill" style="width:50%;background:var(--amber)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+              <span>Business rule violation (OT cap, etc.)</span><span class="panel-text" style="color:var(--text-hi)">1</span>
+            </div>
+            <div class="conf-track" style="width:100%;height:8px;"><div class="conf-fill" style="width:12%;background:var(--blue)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-chat" class="view" style="display:none">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Ask TIA</h1>
+          <p class="page-desc">Context-aware assistant — ask about the client, invoice, or timesheet you're currently looking at.</p>
+        </div>
+      </div>
+      <div class="panel-box" style="max-width:640px;">
+        <div id="chatLog" style="display:flex;flex-direction:column;gap:12px;min-height:120px;"></div>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <input id="chatInput" type="text" placeholder="e.g. why is TS-0143 flagged?" style="flex:1;padding:9px 12px;border:1px solid var(--line-strong);border-radius:4px;font-family:var(--sans);font-size:13px;background:var(--surface);color:var(--text-hi);" onkeydown="if(event.key==='Enter') sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()">Ask</button>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn" style="font-size:11.5px;padding:5px 10px;" onclick="askPreset('Why is TS-0143 flagged?')">Why is TS-0143 flagged?</button>
+          <button class="btn" style="font-size:11.5px;padding:5px 10px;" onclick="askPreset('Which clients have pending invoices?')">Pending invoices?</button>
+          <button class="btn" style="font-size:11.5px;padding:5px 10px;" onclick="askPreset('What is the OT cap rule?')">OT cap rule?</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">TIA prototype — Hacker Arena 2.0 · sample data drawn from TASC test database, Customers/Employees/Payroll_June2026</div>
+  </div>
+</div>
+
+<script>
+const cases = [
+  {
+    id: "TS-0142",
+    name: "Carlos Smith",
+    sub: "Case 7 · Excel, complete match",
+    client: "Emirates Steel Industries LLC",
+    clientCode: "CL001",
+    amount: "AED 9,834.13",
+    status: "clear",
+    statusLabel: "Auto-approved",
+    channel: "Portal upload (.xlsx)",
+    empId: "EMP10001",
+    fields: [
+      {k:"Emp ID", v:"EMP10001", c:99},
+      {k:"Full Name", v:"Carlos Smith", c:99},
+      {k:"Client Code", v:"CL001", c:99},
+      {k:"Working Days", v:"24", c:98},
+      {k:"OT Hours", v:"2", c:97},
+      {k:"Net Pay", v:"AED 9,834.13", c:99},
+    ],
+    flagType: null,
+    timeline: [
+      {t:"09:14", label:"Received via Portal upload", live:false},
+      {t:"09:14", label:"Matched EMP10001 — exact ID match", live:false},
+      {t:"09:15", label:"Validated against client rules — passed", live:false},
+      {t:"09:15", label:"Invoice generated, dispatched to client", live:false},
+    ]
+  },
+  {
+    id: "TS-0143",
+    name: "Ravi Menon",
+    sub: "Case 3 · Email, full-month roster — no Emp ID given",
+    client: "Dubai Cargo Village LLC",
+    clientCode: "CL007",
+    amount: "AED 7,120.00",
+    status: "match",
+    statusLabel: "Identity match needed",
+    channel: "Email (forwarded)",
+    empId: null,
+    fields: [
+      {k:"Full Name", v:"Ravi Menon", c:96},
+      {k:"Client (stated)", v:"CL007 — Dubai Cargo Village", c:91},
+      {k:"Working Days", v:"22", c:94},
+      {k:"Emp ID", v:"— not provided —", c:0, flagged:true},
+    ],
+    flagType: "match",
+    candidates: [
+      {name:"Ravi Menon", id:"EMP10070", client:"CL004 — Sharjah Ports Authority"},
+      {name:"Ravi Menon", id:"EMP10136", client:"CL007 — Dubai Cargo Village"},
+      {name:"Ravi Menon", id:"EMP10157", client:"CL008 — Al Futtaim Group"},
+    ],
+    timeline: [
+      {t:"09:31", label:"Received via Email", live:false},
+      {t:"09:32", label:"3 employees named 'Ravi Menon' found", live:false},
+      {t:"09:32", label:"Stated client narrows to EMP10136 — confidence 91%", live:true},
+    ]
+  },
+  {
+    id: "TS-0144",
+    name: "Fatima Khan",
+    sub: "Case 4 · Handwritten attendance sheet",
+    client: "Al Ghurair Centre LLC",
+    clientCode: "CL009",
+    amount: "AED 6,480.00",
+    status: "review",
+    statusLabel: "Field review needed",
+    channel: "Image (handwritten, scanned)",
+    empId: "EMP10083",
+    fields: [
+      {k:"Emp ID", v:"EMP10083", c:88},
+      {k:"Full Name", v:"Fatima Khan", c:95},
+      {k:"Working Days", v:"23", c:92},
+      {k:"OT Hours", v:"6 or 8?", c:54, flagged:true},
+      {k:"Signature", v:"Present, unverified", c:70},
+    ],
+    flagType: "review",
+    note: "Handwritten OT figure is ambiguous between '6' and '8' — everything else on this form is high-confidence. Only this one field is held for review.",
+    timeline: [
+      {t:"08:55", label:"Received via scanned image upload", live:false},
+      {t:"08:56", label:"Vision OCR extraction complete", live:false},
+      {t:"08:56", label:"OT hours field flagged — 54% confidence", live:true},
+    ]
+  },
+  {
+    id: "TS-0145",
+    name: "Meera Al Rashid",
+    sub: "Case 6 · Email, reimbursements + leave",
+    client: "Emirates Steel Industries LLC",
+    clientCode: "CL001",
+    amount: "AED 13,950.00",
+    status: "sent",
+    statusLabel: "Dispatched",
+    channel: "Email (structured)",
+    empId: "EMP10003",
+    fields: [
+      {k:"Emp ID", v:"EMP10003", c:99},
+      {k:"Reimbursement", v:"AED 240 — taxi, client site", c:97},
+      {k:"Reimbursement", v:"AED 85 — printing", c:96},
+      {k:"Leave taken", v:"1 day, annual", c:98},
+    ],
+    flagType: null,
+    timeline: [
+      {t:"08:10", label:"Received via Email", live:false},
+      {t:"08:11", label:"Matched EMP10003 — exact ID match", live:false},
+      {t:"08:12", label:"Validated — passed", live:false},
+      {t:"08:13", label:"Invoice dispatched per client order rule", live:false},
+    ]
+  },
+  {
+    id: "TS-0146",
+    name: "Aisha Al Zaabi",
+    sub: "Case 2 · Email from employee, no client stated",
+    client: "Dubai Airports FZE",
+    clientCode: "CL003",
+    amount: "AED 8,260.00",
+    status: "clear",
+    statusLabel: "Auto-approved",
+    channel: "Email (employee)",
+    empId: "EMP10058",
+    fields: [
+      {k:"Sender", v:"emp10058@test.com", c:99},
+      {k:"Emp ID", v:"EMP10058", c:99},
+      {k:"Working Days", v:"21", c:96},
+      {k:"Client (looked up)", v:"CL003 — Dubai Airports FZE", c:99},
+    ],
+    flagType: null,
+    timeline: [
+      {t:"07:40", label:"Received via Email (employee self-report)", live:false},
+      {t:"07:41", label:"Matched EMP10058 — exact ID match", live:false},
+      {t:"07:41", label:"Client resolved from employee master record", live:false},
+      {t:"07:42", label:"Invoice generated, dispatched to client", live:false},
+    ]
+  },
+];
+
+// ---------- Invoices: one per dispatched/generated case, formatted per client ----------
+const invoices = [
+  { num:"INV-2026-0301", clientCode:"CL001", client:"Emirates Steel Industries LLC", format:"Full breakdown", amount:"AED 9,834.13", status:"sent", sent:"29 Jun, 09:15" },
+  { num:"INV-2026-0302", clientCode:"CL001", client:"Emirates Steel Industries LLC", format:"Full breakdown", amount:"AED 13,950.00", status:"sent", sent:"29 Jun, 08:13" },
+  { num:"INV-2026-0303", clientCode:"CL003", client:"Dubai Airports FZE", format:"Emp ID + total only", amount:"AED 8,260.00", status:"sent", sent:"29 Jun, 07:42" },
+  { num:"INV-2026-0304", clientCode:"CL009", client:"Al Ghurair Centre LLC", format:"Full breakdown", amount:"AED 6,480.00", status:"pending", sent:"— awaiting field review" },
+  { num:"INV-2026-0305", clientCode:"CL007", client:"Dubai Cargo Village LLC", format:"Emp ID + total only", amount:"AED 7,120.00", status:"pending", sent:"— awaiting identity match" },
+];
+
+// ---------- Dispatch queue: derived from invoices not yet sent, ordered per client's dispatch rule ----------
+const dispatchQueue = [
+  { client:"Al Ghurair Centre LLC", rule:"Ascending by net pay", amount:"AED 6,480.00", status:"Held — field review" },
+  { client:"Dubai Cargo Village LLC", rule:"Ascending by net pay", amount:"AED 7,120.00", status:"Held — identity match" },
+];
+
+// ---------- Client master data, drawn from the Customers sheet ----------
+const clientMaster = [
+  { code:"CL001", name:"Emirates Steel Industries LLC", currency:"AED", profile:"Standard + OT cap 40h/wk", fields:"Full breakdown" },
+  { code:"CL002", name:"Emaar Properties PJSC", currency:"AED", profile:"Standard", fields:"Full breakdown" },
+  { code:"CL003", name:"Dubai Airports FZE", currency:"AED", profile:"Minimal", fields:"Emp ID + total only" },
+  { code:"CL004", name:"Sharjah Ports Authority", currency:"AED", profile:"Standard", fields:"Full breakdown" },
+  { code:"CL007", name:"Dubai Cargo Village LLC", currency:"AED", profile:"Minimal", fields:"Emp ID + total only" },
+  { code:"CL009", name:"Al Ghurair Centre LLC", currency:"AED", profile:"Standard + signature check", fields:"Full breakdown" },
+];
+
+// ---------- Validation rules (module 4.5) ----------
+const validationRules = [
+  { rule:"Working days must be 18–26 for the pay period", appliesTo:"All clients", onFail:"Flag", active:true },
+  { rule:"OT hours over 40/week requires approval note", appliesTo:"CL001, CL004", onFail:"Flag", active:true },
+  { rule:"Emp ID must resolve to exactly one employee", appliesTo:"All clients", onFail:"Hold", active:true },
+  { rule:"Handwritten field confidence must be ≥ 85%", appliesTo:"All clients", onFail:"Flag", active:true },
+  { rule:"Signature or stamp must be present", appliesTo:"CL009", onFail:"Hold", active:true },
+  { rule:"Reimbursement lines must include a reason", appliesTo:"All clients", onFail:"Flag", active:false },
+];
+
+// ---------- Dispatch rules (module 4.6) ----------
+const dispatchRules = [
+  { code:"CL001", client:"Emirates Steel Industries LLC", order:"Ascending by net pay", channel:"Email" },
+  { code:"CL002", client:"Emaar Properties PJSC", order:"Alphabetical by employee", channel:"Client portal" },
+  { code:"CL003", client:"Dubai Airports FZE", order:"As received", channel:"Email" },
+  { code:"CL007", client:"Dubai Cargo Village LLC", order:"Ascending by net pay", channel:"Email" },
+  { code:"CL009", client:"Al Ghurair Centre LLC", order:"Descending by net pay", channel:"Client portal" },
+];
+
+// The client persona is scoped to one company at a time — this simulates
+// whichever client account is actually logged in.
+const loggedInClientCode = "CL001";
+const loggedInClientName = "Emirates Steel Industries LLC";
+let currentRole = "finance";
+
+function confColor(c){
+  if(c >= 85) return 'var(--green)';
+  if(c >= 60) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function statusTag(status, label){
+  return `<span class="tag ${status}"><span class="tag-dot"></span>${label}</span>`;
+}
+
+function renderFields(fields){
+  return fields.map(f => `
+    <div class="field-row ${f.flagged ? 'flagged' : ''}">
+      <div class="field-key">${f.k}</div>
+      <div class="field-val ${f.flagged ? 'editable' : ''}">${f.v}</div>
+      <div class="conf-bar-wrap">
+        <div class="conf-track"><div class="conf-fill" style="width:${f.c}%;background:${confColor(f.c)}"></div></div>
+        <div class="conf-pct">${f.c}%</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSidePanel(c){
+  let blocks = '';
+
+  if(c.flagType === 'match' && c.candidates){
+    blocks += `
+      <div class="panel-box">
+        <div class="panel-title">Possible matches</div>
+        ${c.candidates.map(cand => `
+          <div class="candidate">
+            <div>
+              <div class="candidate-name">${cand.name}</div>
+              <div class="candidate-meta">${cand.id} · ${cand.client}</div>
+            </div>
+            <button class="candidate-pick" onclick="alert('Confirmed: ${cand.id}. Field locked, invoice will regenerate.')">Confirm</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  if(c.flagType === 'review' && c.note){
+    blocks += `
+      <div class="panel-box">
+        <div class="panel-title">Why this is flagged</div>
+        <p class="panel-text">${c.note}</p>
+        <div class="panel-actions">
+          <button class="btn" onclick="alert('Marked as 6. Field confirmed, invoice will regenerate.')">Set to 6</button>
+          <button class="btn" onclick="alert('Marked as 8. Field confirmed, invoice will regenerate.')">Set to 8</button>
+        </div>
+      </div>
+    `;
+  }
+
+  blocks += `
+    <div class="panel-box">
+      <div class="panel-title">Activity</div>
+      <div class="timeline">
+        ${c.timeline.map(t => `
+          <div class="timeline-item">
+            <div class="timeline-dot ${t.live ? 'live':''}"></div>
+            <div class="timeline-time">${t.t}</div>
+            <div class="timeline-label">${t.label}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  return blocks;
+}
+
+function renderCases(){
+  // Finance/FinOps see every client's queue. A client account only ever
+  // sees rows that belong to its own clientCode — filtered on data, not
+  // hidden with CSS, so there is no path for that data to leak into the DOM.
+  const visibleCases = currentRole === 'client'
+    ? cases.filter(c => c.clientCode === loggedInClientCode)
+    : cases;
+
+  const list = document.getElementById('caseList');
+
+  if(visibleCases.length === 0){
+    list.innerHTML = `<div style="padding:40px 18px;text-align:center;color:var(--text-dim);font-size:13px;">No timesheets yet for ${loggedInClientName} this period.</div>`;
+    return;
+  }
+
+  list.innerHTML = visibleCases.map((c, i) => `
+    <div class="case-row" id="row-${i}">
+      <div class="case-row-main" onclick="toggleRow(${i})">
+        <div class="case-id">${c.id}</div>
+        <div>
+          <div class="case-name">${c.name}</div>
+          <div class="case-sub">${c.sub}</div>
+        </div>
+        <div class="case-client">${c.client}</div>
+        <div class="case-amount">${c.amount}</div>
+        <div>${statusTag(c.status, c.statusLabel)}</div>
+        <div class="case-sub">${c.channel}</div>
+        <div class="chevron">▶</div>
+      </div>
+      <div class="case-detail">
+        <span class="source-chip">📄 ${c.channel} ${c.empId ? '· ' + c.empId : ''}</span>
+        <div class="detail-grid">
+          <div>
+            <div class="panel-title" style="margin-bottom:8px;">Extracted fields</div>
+            <div class="field-table">
+              ${renderFields(c.fields)}
+            </div>
+          </div>
+          <div class="side-panel">
+            ${renderSidePanel(c)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleRow(i){
+  const row = document.getElementById('row-' + i);
+  row.classList.toggle('open');
+}
+
+function setRole(role, btn){
+  currentRole = role;
+  document.body.className = 'role-' + role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('clientBannerName').textContent = loggedInClientName;
+
+  // If a config screen was open and we just switched to the client role,
+  // there is no longer a visible nav item pointing at it — snap back to
+  // Inbox so the client never lands on a screen with no way back to it.
+  const restrictedViews = ['clients', 'validation-rules', 'dispatch-rules'];
+  const openRestricted = restrictedViews.find(v => document.getElementById('view-' + v).style.display === 'block');
+  if(role === 'client' && openRestricted){
+    setView('inbox', document.querySelector('.nav-item[data-view="inbox"]'));
+  }
+
+  // Re-render whichever screen is currently open so the client filter
+  // applies everywhere, not just on the Inbox.
+  renderCases();
+  renderInvoices();
+  renderDispatch();
+  renderClients();
+  renderRules();
+  renderDispatchRules();
+}
+
+function setView(view, navEl){
+  const restrictedViews = ['clients', 'validation-rules', 'dispatch-rules'];
+  if(currentRole === 'client' && restrictedViews.includes(view)){
+    // Defence in depth: nav items for these screens are already hidden
+    // for the client role, but the view itself refuses to open too, so
+    // there's no route to client/config data via a direct view switch.
+    return;
+  }
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.getElementById('view-' + view).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+}
+
+function renderInvoices(){
+  const visible = currentRole === 'client'
+    ? invoices.filter(x => x.clientCode === loggedInClientCode)
+    : invoices;
+  const list = document.getElementById('invoiceList');
+  if(visible.length === 0){
+    list.innerHTML = `<div style="padding:30px 18px;text-align:center;color:var(--text-dim);font-size:13px;">No invoices yet for ${loggedInClientName} this period.</div>`;
+    return;
+  }
+  list.innerHTML = visible.map(x => `
+    <div class="case-row-main" style="grid-template-columns:110px 1.3fr 1fr 110px 130px 100px;cursor:default;">
+      <div class="case-id">${x.num}</div>
+      <div class="case-client">${x.client}</div>
+      <div class="case-sub">${x.format}</div>
+      <div class="case-amount">${x.amount}</div>
+      <div>${x.status === 'sent' ? statusTag('sent','Sent') : statusTag('review','Pending')}</div>
+      <div class="case-sub">${x.sent}</div>
+    </div>
+  `).join('');
+}
+
+function renderDispatch(){
+  // Dispatch holds are internal ops detail — clients see their own
+  // invoice status on the Invoices screen, not the operational queue.
+  const list = document.getElementById('dispatchList');
+  if(currentRole === 'client'){
+    list.innerHTML = `<div style="padding:30px 18px;text-align:center;color:var(--text-dim);font-size:13px;">Dispatch tracking is managed by TASC FinOps. See Invoices for your status.</div>`;
+    return;
+  }
+  list.innerHTML = dispatchQueue.map((d,i) => `
+    <div class="case-row-main" style="grid-template-columns:34px 1.3fr 1fr 120px 140px;cursor:default;">
+      <div class="case-id">${i+1}</div>
+      <div class="case-client">${d.client}</div>
+      <div class="case-sub">${d.rule}</div>
+      <div class="case-amount">${d.amount}</div>
+      <div>${statusTag('review', d.status)}</div>
+    </div>
+  `).join('');
+}
+
+function renderClients(){
+  document.getElementById('clientList').innerHTML = clientMaster.map(c => `
+    <div class="case-row-main" style="grid-template-columns:70px 1.4fr 90px 1fr 1fr;cursor:default;">
+      <div class="case-id">${c.code}</div>
+      <div class="case-client">${c.name}</div>
+      <div class="case-sub">${c.currency}</div>
+      <div class="case-sub">${c.profile}</div>
+      <div class="case-sub">${c.fields}</div>
+    </div>
+  `).join('');
+}
+
+function renderRules(){
+  document.getElementById('rulesList').innerHTML = validationRules.map(r => `
+    <div class="case-row-main" style="grid-template-columns:1.6fr 1fr 110px 100px;cursor:default;">
+      <div class="case-name" style="font-weight:500;">${r.rule}</div>
+      <div class="case-sub">${r.appliesTo}</div>
+      <div>${statusTag(r.onFail === 'Hold' ? 'match' : 'review', r.onFail)}</div>
+      <div>${r.active ? statusTag('clear','Active') : statusTag('sent','Off')}</div>
+    </div>
+  `).join('');
+}
+
+function renderDispatchRules(){
+  document.getElementById('dispatchRulesList').innerHTML = dispatchRules.map(d => `
+    <div class="case-row-main" style="grid-template-columns:70px 1.4fr 1.2fr 1fr;cursor:default;">
+      <div class="case-id">${d.code}</div>
+      <div class="case-client">${d.client}</div>
+      <div class="case-sub">${d.order}</div>
+      <div class="case-sub">${d.channel}</div>
+    </div>
+  `).join('');
+}
+
+// ---------- Ask TIA: a small context-aware responder over the same data ----------
+// In the real build this call is replaced with an LLM call carrying the
+// current client/invoice/timesheet context as part of the prompt — the
+// matching logic here stands in for that context lookup.
+function chatRespond(question){
+  const q = question.toLowerCase();
+  if(q.includes('ts-0143') || (q.includes('ravi') )){
+    return "TS-0143 is held because the email gave a name but no Emp ID. 'Ravi Menon' matches 3 employees across CL004, CL007 and CL008. The stated client narrows it to EMP10136 at 91% confidence — open the case in Inbox to confirm.";
+  }
+  if(q.includes('ts-0144') || q.includes('fatima')){
+    return "TS-0144 is held because one handwritten field — OT hours — is ambiguous between 6 and 8 (54% confidence). Every other field on that form is high-confidence, so only that field is flagged.";
+  }
+  if(q.includes('pending') || q.includes('awaiting')){
+    return "Two invoices are pending: Al Ghurair Centre (AED 6,480.00, awaiting field review) and Dubai Cargo Village (AED 7,120.00, awaiting identity match).";
+  }
+  if(q.includes('ot cap') || q.includes('overtime')){
+    return "The active rule caps OT hours at 40/week for CL001 and CL004. Anything over that needs an approval note attached, or the invoice is flagged for review rather than auto-dispatched.";
+  }
+  if(q.includes('touchless') || q.includes('rate')){
+    return "Touchless rate this period is 81% — 34 of 42 timesheets went start to finish with zero human touch, against an 80%+ target.";
+  }
+  return "I can answer questions about the current client, invoice, or timesheet in view. Try asking about a specific case ID, a client's rules, or pending invoices.";
+}
+
+function appendChat(role, text){
+  const log = document.getElementById('chatLog');
+  const isUser = role === 'user';
+  log.insertAdjacentHTML('beforeend', `
+    <div style="align-self:${isUser ? 'flex-end' : 'flex-start'};max-width:80%;">
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:3px;text-align:${isUser?'right':'left'};font-family:var(--mono);">${isUser ? 'You' : 'TIA'}</div>
+      <div style="background:${isUser ? 'var(--blue-dim)' : 'var(--surface-2)'};border:1px solid var(--line);border-radius:4px;padding:9px 12px;font-size:13px;line-height:1.5;color:var(--text-hi);">${text}</div>
+    </div>
+  `);
+  log.scrollTop = log.scrollHeight;
+}
+
+function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  appendChat('user', text);
+  input.value = '';
+  setTimeout(() => appendChat('tia', chatRespond(text)), 300);
+}
+
+function askPreset(text){
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+renderCases();
+renderInvoices();
+renderDispatch();
+renderClients();
+renderRules();
+renderDispatchRules();
+</script>
+
+</body>
+</html>
