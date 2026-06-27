@@ -566,7 +566,7 @@
         <h1 class="page-title">June 2026 — Processing Queue</h1>
         <p class="page-desc">Timesheets received across all channels, from upload to dispatched invoice.</p>
       </div>
-      <button class="btn btn-primary finance-only">+ Upload timesheet</button>
+      <button class="btn btn-primary finance-only" onclick="uploadTimesheet()">+ Upload timesheet</button>
     </div>
 
     <div class="kpi-row finance-only">
@@ -773,12 +773,14 @@
       </div>
     </div>
 
-    <div class="footer-note">TIA prototype — Hacker Arena 2.0 · sample data drawn from TASC test database, Customers/Employees/Payroll_June2026</div>
+    <div class="footer-note">TIA prototype — Hacker Arena 2.0 · <span id="backendStatus">Connecting to backend...</span></div>
   </div>
 </div>
 
 <script>
-const cases = [
+const API_BASE = window.location.protocol === 'file:' ? null : '';
+
+let cases = [
   {
     id: "TS-0142",
     name: "Carlos Smith",
@@ -914,7 +916,7 @@ const cases = [
 ];
 
 // ---------- Invoices: one per dispatched/generated case, formatted per client ----------
-const invoices = [
+let invoices = [
   { num:"INV-2026-0301", clientCode:"CL001", client:"Emirates Steel Industries LLC", format:"Full breakdown", amount:"AED 9,834.13", status:"sent", sent:"29 Jun, 09:15" },
   { num:"INV-2026-0302", clientCode:"CL001", client:"Emirates Steel Industries LLC", format:"Full breakdown", amount:"AED 13,950.00", status:"sent", sent:"29 Jun, 08:13" },
   { num:"INV-2026-0303", clientCode:"CL003", client:"Dubai Airports FZE", format:"Emp ID + total only", amount:"AED 8,260.00", status:"sent", sent:"29 Jun, 07:42" },
@@ -923,13 +925,13 @@ const invoices = [
 ];
 
 // ---------- Dispatch queue: derived from invoices not yet sent, ordered per client's dispatch rule ----------
-const dispatchQueue = [
+let dispatchQueue = [
   { client:"Al Ghurair Centre LLC", rule:"Ascending by net pay", amount:"AED 6,480.00", status:"Held — field review" },
   { client:"Dubai Cargo Village LLC", rule:"Ascending by net pay", amount:"AED 7,120.00", status:"Held — identity match" },
 ];
 
 // ---------- Client master data, drawn from the Customers sheet ----------
-const clientMaster = [
+let clientMaster = [
   { code:"CL001", name:"Emirates Steel Industries LLC", currency:"AED", profile:"Standard + OT cap 40h/wk", fields:"Full breakdown" },
   { code:"CL002", name:"Emaar Properties PJSC", currency:"AED", profile:"Standard", fields:"Full breakdown" },
   { code:"CL003", name:"Dubai Airports FZE", currency:"AED", profile:"Minimal", fields:"Emp ID + total only" },
@@ -939,7 +941,7 @@ const clientMaster = [
 ];
 
 // ---------- Validation rules (module 4.5) ----------
-const validationRules = [
+let validationRules = [
   { rule:"Working days must be 18–26 for the pay period", appliesTo:"All clients", onFail:"Flag", active:true },
   { rule:"OT hours over 40/week requires approval note", appliesTo:"CL001, CL004", onFail:"Flag", active:true },
   { rule:"Emp ID must resolve to exactly one employee", appliesTo:"All clients", onFail:"Hold", active:true },
@@ -949,7 +951,7 @@ const validationRules = [
 ];
 
 // ---------- Dispatch rules (module 4.6) ----------
-const dispatchRules = [
+let dispatchRules = [
   { code:"CL001", client:"Emirates Steel Industries LLC", order:"Ascending by net pay", channel:"Email" },
   { code:"CL002", client:"Emaar Properties PJSC", order:"Alphabetical by employee", channel:"Client portal" },
   { code:"CL003", client:"Dubai Airports FZE", order:"As received", channel:"Email" },
@@ -959,8 +961,8 @@ const dispatchRules = [
 
 // The client persona is scoped to one company at a time — this simulates
 // whichever client account is actually logged in.
-const loggedInClientCode = "CL001";
-const loggedInClientName = "Emirates Steel Industries LLC";
+let loggedInClientCode = "CL001";
+let loggedInClientName = "Emirates Steel Industries LLC";
 let currentRole = "finance";
 
 function confColor(c){
@@ -999,7 +1001,7 @@ function renderSidePanel(c){
               <div class="candidate-name">${cand.name}</div>
               <div class="candidate-meta">${cand.id} · ${cand.client}</div>
             </div>
-            <button class="candidate-pick" onclick="alert('Confirmed: ${cand.id}. Field locked, invoice will regenerate.')">Confirm</button>
+            <button class="candidate-pick" onclick="confirmMatch('${c.id}', '${cand.id}')">Confirm</button>
           </div>
         `).join('')}
       </div>
@@ -1012,8 +1014,8 @@ function renderSidePanel(c){
         <div class="panel-title">Why this is flagged</div>
         <p class="panel-text">${c.note}</p>
         <div class="panel-actions">
-          <button class="btn" onclick="alert('Marked as 6. Field confirmed, invoice will regenerate.')">Set to 6</button>
-          <button class="btn" onclick="alert('Marked as 8. Field confirmed, invoice will regenerate.')">Set to 8</button>
+          <button class="btn" onclick="reviewField('${c.id}', 'OT Hours', '6')">Set to 6</button>
+          <button class="btn" onclick="reviewField('${c.id}', 'OT Hours', '8')">Set to 8</button>
         </div>
       </div>
     `;
@@ -1239,13 +1241,97 @@ function appendChat(role, text){
   log.scrollTop = log.scrollHeight;
 }
 
-function sendChat(){
+async function apiPost(path, payload){
+  if(!API_BASE){
+    return null;
+  }
+  return requestJson(path, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+
+function requestJson(path, options = {}){
+  const method = options.method || 'GET';
+  const body = options.body || null;
+  const url = `${API_BASE}${path}`;
+
+  if(typeof fetch === 'function'){
+    return fetch(url, {
+      method,
+      headers: {'Content-Type': 'application/json'},
+      body
+    }).then(response => {
+      if(!response.ok){
+        throw new Error(`Backend request failed: ${response.status}`);
+      }
+      return response.json();
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = () => {
+      if(xhr.status < 200 || xhr.status >= 300){
+        reject(new Error(`Backend request failed: ${xhr.status}`));
+        return;
+      }
+      resolve(JSON.parse(xhr.responseText));
+    };
+    xhr.onerror = () => reject(new Error('Backend request failed'));
+    xhr.send(body);
+  });
+}
+
+async function confirmMatch(caseId, employeeId){
+  try{
+    const result = await apiPost('/api/actions/confirm-match', {caseId, employeeId});
+    alert(result?.message || `Confirmed: ${employeeId}. Field locked, invoice will regenerate.`);
+  }catch(err){
+    console.error(err);
+    alert(`Confirmed locally: ${employeeId}. Backend is not available.`);
+  }
+}
+
+async function reviewField(caseId, field, value){
+  try{
+    const result = await apiPost('/api/actions/review-field', {caseId, field, value});
+    alert(result?.message || `Marked as ${value}. Field confirmed, invoice will regenerate.`);
+  }catch(err){
+    console.error(err);
+    alert(`Marked locally as ${value}. Backend is not available.`);
+  }
+}
+
+async function uploadTimesheet(){
+  try{
+    const result = await apiPost('/api/upload-timesheet', {});
+    alert(result?.message || 'Timesheet received. Extraction and validation are queued.');
+  }catch(err){
+    console.error(err);
+    alert('Demo upload queued locally. Start the backend to process uploads.');
+  }
+}
+
+async function sendChat(){
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if(!text) return;
   appendChat('user', text);
   input.value = '';
-  setTimeout(() => appendChat('tia', chatRespond(text)), 300);
+  try{
+    const result = await apiPost('/api/chat', {
+      question: text,
+      role: currentRole,
+      clientCode: currentRole === 'client' ? loggedInClientCode : null
+    });
+    appendChat('tia', result?.answer || chatRespond(text));
+  }catch(err){
+    console.error(err);
+    setTimeout(() => appendChat('tia', chatRespond(text)), 300);
+  }
 }
 
 function askPreset(text){
@@ -1253,12 +1339,41 @@ function askPreset(text){
   sendChat();
 }
 
-renderCases();
-renderInvoices();
-renderDispatch();
-renderClients();
-renderRules();
-renderDispatchRules();
+function renderAll(){
+  renderCases();
+  renderInvoices();
+  renderDispatch();
+  renderClients();
+  renderRules();
+  renderDispatchRules();
+}
+
+async function initApp(){
+  if(API_BASE){
+    try{
+      const data = await requestJson('/api/bootstrap');
+      cases = data.cases || cases;
+      invoices = data.invoices || invoices;
+      dispatchQueue = data.dispatchQueue || dispatchQueue;
+      clientMaster = data.clientMaster || clientMaster;
+      validationRules = data.validationRules || validationRules;
+      dispatchRules = data.dispatchRules || dispatchRules;
+      loggedInClientCode = data.loggedInClientCode || loggedInClientCode;
+      loggedInClientName = data.loggedInClientName || loggedInClientName;
+      document.getElementById('clientBannerName').textContent = loggedInClientName;
+      document.getElementById('backendStatus').textContent = 'Backend connected';
+    }catch(err){
+      console.error(err);
+      document.getElementById('backendStatus').textContent = 'Using local fallback data';
+      appendChat('tia', 'Backend is unavailable, so I am showing the local demo data.');
+    }
+  }else{
+    document.getElementById('backendStatus').textContent = 'Using local fallback data';
+  }
+  renderAll();
+}
+
+initApp();
 </script>
 
 </body>
