@@ -628,20 +628,20 @@
   <div class="sidenav">
     <div class="nav-section">
       <div class="nav-label">Workflow</div>
-      <div class="nav-item active" data-view="inbox" onclick="setView('inbox', this)">📥 Inbox <span class="nav-pill warn" id="navInboxCount">3</span></div>
-      <div class="nav-item" data-view="invoices" onclick="setView('invoices', this)">🧾 Invoices <span class="nav-pill">42</span></div>
-      <div class="nav-item" data-view="dispatch" onclick="setView('dispatch', this)">🚚 Dispatch <span class="nav-pill">12</span></div>
+      <div class="nav-item active" data-view="inbox" onclick="setView('inbox', this)">Inbox <span class="nav-pill warn" id="navInboxCount">3</span></div>
+      <div class="nav-item" data-view="invoices" onclick="setView('invoices', this)">Invoices <span class="nav-pill">42</span></div>
+      <div class="nav-item" data-view="dispatch" onclick="setView('dispatch', this)">Dispatch <span class="nav-pill">12</span></div>
     </div>
     <div class="nav-section nav-restricted">
       <div class="nav-label">Configuration</div>
-      <div class="nav-item" data-view="clients" onclick="setView('clients', this)">🏢 Clients <span class="nav-pill">10</span></div>
-      <div class="nav-item" data-view="validation-rules" onclick="setView('validation-rules', this)">⚙️ Validation rules</div>
-      <div class="nav-item" data-view="dispatch-rules" onclick="setView('dispatch-rules', this)">📤 Dispatch rules</div>
+      <div class="nav-item" data-view="clients" onclick="setView('clients', this)">Clients <span class="nav-pill">10</span></div>
+      <div class="nav-item" data-view="validation-rules" onclick="setView('validation-rules', this)">Validation rules</div>
+      <div class="nav-item" data-view="dispatch-rules" onclick="setView('dispatch-rules', this)">Dispatch rules</div>
     </div>
     <div class="nav-section">
       <div class="nav-label">Insight</div>
-      <div class="nav-item" data-view="analytics" onclick="setView('analytics', this)">📊 Analytics</div>
-      <div class="nav-item" data-view="chat" onclick="setView('chat', this)">💬 Ask TIA</div>
+      <div class="nav-item" data-view="analytics" onclick="setView('analytics', this)">Analytics</div>
+      <div class="nav-item" data-view="chat" onclick="setView('chat', this)">Ask TIA</div>
     </div>
   </div>
 
@@ -1188,7 +1188,7 @@ function renderCases(){
         <div class="chevron">▶</div>
       </div>
       <div class="case-detail">
-        <span class="source-chip">📄 ${c.channel} ${c.empId ? '· ' + c.empId : ''}</span>
+        <span class="source-chip">${c.channel} ${c.empId ? '· ' + c.empId : ''}</span>
         <div class="detail-grid">
           <div>
             <div class="panel-title" style="margin-bottom:8px;">Extracted fields</div>
